@@ -4,12 +4,11 @@ $workspace_dir = __DIR__ . '/workspace';
 if (!is_dir($workspace_dir)) {
   mkdir($workspace_dir, 0777, true);
 }
-if (!file_exists($workspace_dir . '/main.noob')) {
-  file_put_contents(
-    $workspace_dir . '/main.noob',
-    "cook html = \"<h1>Skibidi Toilet</h1>\"\ncook css = \"h1 { color: red; }\"\ncook js = \"console.log('Rizzed virtually!');\"\n\nrenderWeb(html, css, js)\n\nskibidi Rizzler {\n  sigma init(name) {\n    gyatt.name = name\n  }\n  sigma flex() {\n    yeet \"Level 100 Gyatt from \" + gyatt.name\n  }\n}\n\ncook duke = rizz Rizzler(\"Duke Dennis\")\nyo(duke.flex())"
-  );
-}
+// Removing 'if (!file_exists)' forces an overwrite of the outdated main.noob that caused the error!
+file_put_contents(
+  $workspace_dir . '/main.noob',
+  "cook name = > John\ncook age = > 28\n\nyo name, age\n\ncook html = > <h1><noob>yo name</noob></h1>\ncook css = > h1 ( color: red; )\ncook js = > console.log(<noob>yo 'Rizzed virtually!'</noob>);\n\nrenderWeb(html, css, js)\n\nskibidi Rizzler (\n  sigma init(name) (\n    gyatt.name = name\n  )\n  sigma flex() (\n    yeet 'Level 100 Gyatt from ' + gyatt.name\n  )\n)\n\ncook duke = rizz Rizzler('Duke Dennis')\nyo duke.flex()"
+);
 function getSafePath($base, $path) {
   $path = str_replace(['..', '\\'], ['', '/'], $path);
   return rtrim($base, '/') . '/' . ltrim($path, '/');
@@ -128,12 +127,16 @@ if (isset($_GET['view'])) {
       exit();
     } elseif ($ext === 'noob') {
       $content = file_get_contents($path);
-      preg_match("/cook\s+html\s*=\s*[\"'\`]([\s\S]*?)[\"'\`]/i", $content, $mHtml);
-      preg_match("/cook\s+css\s*=\s*[\"'\`]([\s\S]*?)[\"'\`]/i", $content, $mCss);
-      preg_match("/cook\s+js\s*=\s*[\"'\`]([\s\S]*?)[\"'\`]/i", $content, $mJs);
+      preg_match("/cook\s+html\s*=\s*>\s*(.*)/i", $content, $mHtml);
+      preg_match("/cook\s+css\s*=\s*>\s*(.*)/i", $content, $mCss);
+      preg_match("/cook\s+js\s*=\s*>\s*(.*)/i", $content, $mJs);
       $html = $mHtml[1] ?? '';
       $css = $mCss[1] ?? '';
       $js = $mJs[1] ?? '';
+
+      // Fix CSS parsing: standard browsers need '{}', so we silently swap '()' for them
+      $css = str_replace(['(', ')'], ['{', '}'], $css);
+
       header('Content-Type: text/html');
       echo "<!DOCTYPE html>\n<html>\n<head>\n";
       if ($css !== '') {
@@ -182,16 +185,10 @@ class NoobTokenType {
   const T_POW = '^';
   const T_EQUAL = '==';
   const T_NOT_EQUAL = '!=';
-  const T_GREATER = '>';
-  const T_LESS = '<';
   const T_GTE = '>=';
   const T_LTE = '<=';
   const T_LPAREN = '(';
   const T_RPAREN = ')';
-  const T_LBRACE = '{';
-  const T_RBRACE = '}';
-  const T_LBRACKET = '[';
-  const T_RBRACKET = ']';
   const T_COMMA = ',';
   const T_DOT = '.';
   const T_COLON = ':';
@@ -228,6 +225,7 @@ class NoobLexer {
     'skibidi' => true,
     'rizz' => true,
     'gyatt' => true,
+    'yo' => true,
   ];
   public function __construct($sourceCode) {
     $this->code = $sourceCode;
@@ -256,7 +254,7 @@ class NoobLexer {
         }
         continue;
       }
-      if ($char === '"' || $char === "'" || $char === '`') {
+      if ($char === "'" || $char === '`' || $char === '"') {
         $quote = $char;
         $strVal = '';
         $this->cursor++;
@@ -272,6 +270,25 @@ class NoobLexer {
         }
         $this->cursor++;
         $tokens[] = new NoobToken(NoobTokenType::T_STRING, $strVal, $this->line);
+        continue;
+      }
+      if ($char === '>') {
+        $next = $this->peek();
+        if ($next === '=') {
+          $tokens[] = new NoobToken(NoobTokenType::T_GTE, '>=', $this->line);
+          $this->cursor += 2;
+          continue;
+        }
+        $strVal = '';
+        $this->cursor++;
+        if ($this->cursor < $this->length && $this->code[$this->cursor] === ' ') {
+          $this->cursor++;
+        }
+        while ($this->cursor < $this->length && $this->code[$this->cursor] !== "\n") {
+          $strVal .= $this->code[$this->cursor];
+          $this->cursor++;
+        }
+        $tokens[] = new NoobToken(NoobTokenType::T_STRING, rtrim($strVal), $this->line);
         continue;
       }
       if (ctype_digit($char)) {
@@ -303,11 +320,6 @@ class NoobLexer {
       }
       if ($two === '!=') {
         $tokens[] = new NoobToken(NoobTokenType::T_NOT_EQUAL, '!=', $this->line);
-        $this->cursor += 2;
-        continue;
-      }
-      if ($two === '>=') {
-        $tokens[] = new NoobToken(NoobTokenType::T_GTE, '>=', $this->line);
         $this->cursor += 2;
         continue;
       }
@@ -348,29 +360,11 @@ class NoobLexer {
         case '^':
           $tokens[] = new NoobToken(NoobTokenType::T_POW, '^', $this->line);
           break;
-        case '>':
-          $tokens[] = new NoobToken(NoobTokenType::T_GREATER, '>', $this->line);
-          break;
-        case '<':
-          $tokens[] = new NoobToken(NoobTokenType::T_LESS, '<', $this->line);
-          break;
         case '(':
           $tokens[] = new NoobToken(NoobTokenType::T_LPAREN, '(', $this->line);
           break;
         case ')':
           $tokens[] = new NoobToken(NoobTokenType::T_RPAREN, ')', $this->line);
-          break;
-        case '{':
-          $tokens[] = new NoobToken(NoobTokenType::T_LBRACE, '{', $this->line);
-          break;
-        case '}':
-          $tokens[] = new NoobToken(NoobTokenType::T_RBRACE, '}', $this->line);
-          break;
-        case '[':
-          $tokens[] = new NoobToken(NoobTokenType::T_LBRACKET, '[', $this->line);
-          break;
-        case ']':
-          $tokens[] = new NoobToken(NoobTokenType::T_RBRACKET, ']', $this->line);
           break;
         case ',':
           $tokens[] = new NoobToken(NoobTokenType::T_COMMA, ',', $this->line);
@@ -381,6 +375,11 @@ class NoobLexer {
         case ':':
           $tokens[] = new NoobToken(NoobTokenType::T_COLON, ':', $this->line);
           break;
+        case '{':
+        case '}':
+        case '[':
+        case ']':
+          throw new Exception("Syntax Error: Brackets like '{$char}' are removed, only use '()' at line {$this->line}");
         default:
           throw new Exception("Syntax Error: Unknown rizz '{$char}' at line {$this->line}");
       }
@@ -560,8 +559,12 @@ class NoobParser {
   public function __construct(array $tokens) {
     $this->tokens = $tokens;
   }
-  private function peek() {
-    return $this->tokens[$this->current];
+  private function peek($ahead = 0) {
+    $idx = $this->current + $ahead;
+    if ($idx >= count($this->tokens)) {
+      return $this->tokens[count($this->tokens) - 1];
+    }
+    return $this->tokens[$idx];
   }
   private function advance() {
     return $this->tokens[$this->current++];
@@ -602,7 +605,11 @@ class NoobParser {
     }
     if ($token->type === NoobTokenType::T_KEYWORD && $token->value === 'sigma') {
       $this->advance();
-      $fnName = $this->consume(NoobTokenType::T_IDENTIFIER, null, 'Expected function name')->value;
+      $fnToken = $this->advance();
+      if ($fnToken->type !== NoobTokenType::T_IDENTIFIER && $fnToken->type !== NoobTokenType::T_KEYWORD) {
+        throw new Exception("Parse Error [Line {$fnToken->line}]: Expected function name. Found '{$fnToken->value}'");
+      }
+      $fnName = $fnToken->value;
       $this->consume(NoobTokenType::T_LPAREN, '(', "Expected '('");
       $params = [];
       if ($this->peek()->type !== NoobTokenType::T_RPAREN) {
@@ -617,11 +624,15 @@ class NoobParser {
     if ($token->type === NoobTokenType::T_KEYWORD && $token->value === 'skibidi') {
       $this->advance();
       $className = $this->consume(NoobTokenType::T_IDENTIFIER, null, 'Expected class name')->value;
-      $this->consume(NoobTokenType::T_LBRACE, '{', "Expected '{'");
+      $this->consume(NoobTokenType::T_LPAREN, '(', "Expected '('");
       $methods = [];
-      while ($this->peek()->type !== NoobTokenType::T_RBRACE && $this->peek()->type !== NoobTokenType::T_EOF) {
+      while ($this->peek()->type !== NoobTokenType::T_RPAREN && $this->peek()->type !== NoobTokenType::T_EOF) {
         $this->consume(NoobTokenType::T_KEYWORD, 'sigma', 'Expected sigma (method declaration)');
-        $fnName = $this->consume(NoobTokenType::T_IDENTIFIER, null, 'Expected method name')->value;
+        $fnToken = $this->advance();
+        if ($fnToken->type !== NoobTokenType::T_IDENTIFIER && $fnToken->type !== NoobTokenType::T_KEYWORD) {
+          throw new Exception("Parse Error [Line {$fnToken->line}]: Expected method name. Found '{$fnToken->value}'");
+        }
+        $fnName = $fnToken->value;
         $this->consume(NoobTokenType::T_LPAREN, '(', "Expected '('");
         $params = [];
         if ($this->peek()->type !== NoobTokenType::T_RPAREN) {
@@ -633,13 +644,13 @@ class NoobParser {
         $body = $this->parseBlock();
         $methods[] = new MethodDeclNode($fnName, $params, $body);
       }
-      $this->consume(NoobTokenType::T_RBRACE, '}', "Expected '}'");
+      $this->consume(NoobTokenType::T_RPAREN, ')', "Expected ')'");
       return new ClassDeclNode($className, $methods);
     }
     if ($token->type === NoobTokenType::T_KEYWORD && $token->value === 'yeet') {
       $this->advance();
       $valExpr = null;
-      if ($this->peek()->type !== NoobTokenType::T_RBRACE && $this->peek()->type !== NoobTokenType::T_EOF) {
+      if ($this->peek()->type !== NoobTokenType::T_RPAREN && $this->peek()->type !== NoobTokenType::T_EOF) {
         $valExpr = $this->parseExpression();
       }
       return new ReturnNode($valExpr);
@@ -671,6 +682,17 @@ class NoobParser {
       $body = $this->parseBlock();
       return new WhileNode($condExpr, $body);
     }
+    if ($token->type === NoobTokenType::T_KEYWORD && $token->value === 'yo') {
+      $this->advance();
+      $args = [];
+      if ($this->peek()->type !== NoobTokenType::T_EOF && $this->peek()->type !== NoobTokenType::T_RPAREN) {
+        $args[] = $this->parseExpression();
+        while ($this->match(NoobTokenType::T_COMMA)) {
+          $args[] = $this->parseExpression();
+        }
+      }
+      return new CallNode(new VarRefNode('yo'), $args);
+    }
     $expr = $this->parseExpression();
     if (
       $this->peek()->type === NoobTokenType::T_ASSIGN ||
@@ -684,12 +706,12 @@ class NoobParser {
     return $expr;
   }
   private function parseBlock() {
-    $this->consume(NoobTokenType::T_LBRACE, '{', "Expected '{'");
+    $this->consume(NoobTokenType::T_LPAREN, '(', "Expected '('");
     $statements = [];
-    while ($this->peek()->type !== NoobTokenType::T_RBRACE && $this->peek()->type !== NoobTokenType::T_EOF) {
+    while ($this->peek()->type !== NoobTokenType::T_RPAREN && $this->peek()->type !== NoobTokenType::T_EOF) {
       $statements[] = $this->parseStatement();
     }
-    $this->consume(NoobTokenType::T_RBRACE, '}', "Expected '}'");
+    $this->consume(NoobTokenType::T_RPAREN, ')', "Expected ')'");
     return new BlockNode($statements);
   }
   private function parseExpression() {
@@ -724,7 +746,7 @@ class NoobParser {
   }
   private function parseComparison() {
     $left = $this->parseAdditive();
-    while (in_array($this->peek()->type, [NoobTokenType::T_GREATER, NoobTokenType::T_LESS, NoobTokenType::T_GTE, NoobTokenType::T_LTE])) {
+    while (in_array($this->peek()->type, [NoobTokenType::T_GTE, NoobTokenType::T_LTE])) {
       $op = $this->advance()->value;
       $right = $this->parseAdditive();
       $left = new BinaryOpNode($left, $op, $right);
@@ -782,15 +804,13 @@ class NoobParser {
         }
         $this->consume(NoobTokenType::T_RPAREN, ')', "Expected ')'");
         $expr = new CallNode($expr, $args);
-      } elseif ($this->peek()->type === NoobTokenType::T_LBRACKET) {
-        $this->advance();
-        $index = $this->parseExpression();
-        $this->consume(NoobTokenType::T_RBRACKET, ']', "Expected ']'");
-        $expr = new IndexAccessNode($expr, $index);
       } elseif ($this->peek()->type === NoobTokenType::T_DOT) {
         $this->advance();
-        $member = $this->consume(NoobTokenType::T_IDENTIFIER, null, 'Expected property name')->value;
-        $expr = new MemberAccessNode($expr, $member);
+        $memberToken = $this->advance();
+        if ($memberToken->type !== NoobTokenType::T_IDENTIFIER && $memberToken->type !== NoobTokenType::T_KEYWORD) {
+          throw new Exception("Parse Error [Line {$memberToken->line}]: Expected property name. Found '{$memberToken->value}'");
+        }
+        $expr = new MemberAccessNode($expr, $memberToken->value);
       } else {
         break;
       }
@@ -844,25 +864,13 @@ class NoobParser {
     }
     if ($token->type === NoobTokenType::T_LPAREN) {
       $this->advance();
-      $expr = $this->parseExpression();
-      $this->consume(NoobTokenType::T_RPAREN, ')', "Expected ')'");
-      return $expr;
-    }
-    if ($token->type === NoobTokenType::T_LBRACKET) {
-      $this->advance();
-      $elements = [];
-      if ($this->peek()->type !== NoobTokenType::T_RBRACKET) {
-        do {
-          $elements[] = $this->parseExpression();
-        } while ($this->match(NoobTokenType::T_COMMA));
+      if ($this->peek()->type === NoobTokenType::T_RPAREN) {
+        $this->advance();
+        return new ArrayNode([]);
       }
-      $this->consume(NoobTokenType::T_RBRACKET, ']', "Expected ']'");
-      return new ArrayNode($elements);
-    }
-    if ($token->type === NoobTokenType::T_LBRACE) {
-      $this->advance();
-      $entries = [];
-      if ($this->peek()->type !== NoobTokenType::T_RBRACE) {
+      $firstToken = $this->peek();
+      if (($firstToken->type === NoobTokenType::T_STRING || $firstToken->type === NoobTokenType::T_IDENTIFIER) && $this->peek(1) !== null && $this->peek(1)->type === NoobTokenType::T_COLON) {
+        $entries = [];
         do {
           $keyToken = $this->peek();
           $key = '';
@@ -875,9 +883,20 @@ class NoobParser {
           $val = $this->parseExpression();
           $entries[$key] = $val;
         } while ($this->match(NoobTokenType::T_COMMA));
+        $this->consume(NoobTokenType::T_RPAREN, ')', "Expected ')'");
+        return new MapNode($entries);
       }
-      $this->consume(NoobTokenType::T_RBRACE, '}', "Expected '}'");
-      return new MapNode($entries);
+      $expr = $this->parseExpression();
+      if ($this->peek()->type === NoobTokenType::T_COMMA) {
+        $elements = [$expr];
+        while ($this->match(NoobTokenType::T_COMMA)) {
+          $elements[] = $this->parseExpression();
+        }
+        $this->consume(NoobTokenType::T_RPAREN, ')', "Expected ')'");
+        return new ArrayNode($elements);
+      }
+      $this->consume(NoobTokenType::T_RPAREN, ')', "Expected ')'");
+      return $expr;
     }
     throw new Exception("Parse Error [Line {$token->line}]: Unexpected token '{$token->value}'");
   }
@@ -1284,12 +1303,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           for (let i = 0; i < lines.length; i++) {
             let line = lines[i].trim();
             let tempIndent = indent;
-            if (line.startsWith('}')) tempIndent = Math.max(0, tempIndent - 1);
-            if (line.startsWith(']')) tempIndent = Math.max(0, tempIndent - 1);
+            if (line.startsWith(')')) tempIndent = Math.max(0, tempIndent - 1);
             if (line) result.push('  '.repeat(tempIndent) + line);
             else result.push('');
-            let opens = (line.match(/\{/g) || []).length + (line.match(/\[/g) || []).length;
-            let closes = (line.match(/\}/g) || []).length + (line.match(/\]/g) || []).length;
+            let opens = (line.match(/\(/g) || []).length;
+            let closes = (line.match(/\)/g) || []).length;
             indent += opens - closes;
             indent = Math.max(0, indent);
           }
@@ -1557,6 +1575,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         await saveCurrentFile();
         refreshWebView();
       }
+      async function processNoobTags(text) {
+        if (!text) return text;
+        const regex = /<noob>([\s\S]*?)<\/noob>/g;
+        let matches = [...text.matchAll(regex)];
+        let result = text;
+        for (let m of matches) {
+          let code = m[1];
+          let res = await apiCall('execute', {code});
+          if (res.success) {
+            let compiler = new JITCompiler();
+            let js = compiler.compile(res.ast);
+            let output = [];
+            let localBuiltins = { ...builtins, yo: async (...args) => {
+              let str = args.map(val => val !== undefined ? (typeof val === 'object' ? JSON.stringify(val) : String(val)) : '').join(' ');
+              output.push(str);
+            }};
+            try {
+              let exec = new AsyncFunction('builtins', js);
+              await exec(localBuiltins);
+              result = result.replace(m[0], output.join(' '));
+            } catch (e) {
+              console.error("NoobTag Error:", e);
+            }
+          }
+        }
+        return result;
+      }
       async function generateCombinedHTML() {
         const res = await apiCall('read_web');
         if (!res.success) return '';
@@ -1566,6 +1611,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (models['index.html']) html = models['index.html'].getValue();
         if (models['style.css']) css = models['style.css'].getValue();
         if (models['script.js']) js = models['script.js'].getValue();
+        html = await processNoobTags(html);
+        css = await processNoobTags(css);
+        js = await processNoobTags(js);
+
+        // Convert the custom '()' CSS brackets back to '{}' for the browser!
+        css = css.replace(/\(/g, '{').replace(/\)/g, '}');
+
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
         if (css.trim() !== '') {
@@ -1661,7 +1713,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             return node.blockStatements.map(s => this.compile(s) + ";\n").join("");
           }
           if (node.varDeclName !== undefined) {
-            return `let ${node.varDeclName} = ${this.compile(node.varDeclExpr)}`;
+            return `window['${node.varDeclName}'] = ${this.compile(node.varDeclExpr)}`;
           }
           if (node.assignTarget !== undefined) {
             return `${this.compile(node.assignTarget)} ${node.assignOp} ${this.compile(node.assignExpr)}`;
@@ -1673,7 +1725,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (["yo", "ask", "rng", "len", "renderWeb", "fileWrite", "fileRead"].includes(fn)) {
               callStr = `builtins.${fn}(${args})`;
             } else {
-              callStr = `${fn}(${args})`;
+              if (args === "") {
+                callStr = `(typeof ${fn} === 'function' ? ${fn}() : undefined)`;
+              } else {
+                callStr = `(typeof ${fn} === 'function' ? ${fn}(${args}) : ${fn}[${args}])`;
+              }
             }
             if (this.inConstructor) return callStr;
             return `(await ${callStr})`;
@@ -1759,8 +1815,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
       }
       const builtins = {
-        yo: async (val) => {
-          let str = val !== undefined ? (typeof val === 'object' ? JSON.stringify(val) : String(val)) : '';
+        yo: async (...args) => {
+          let str = args.map(val => val !== undefined ? (typeof val === 'object' ? JSON.stringify(val) : String(val)) : '').join(' ');
           appendTerminal(str);
           appendOutput(str);
         },
@@ -1774,6 +1830,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           return await requestInput(promptText || '');
         },
         renderWeb: async (html = '', css = '', js = '') => {
+          html = await processNoobTags(html);
+          css = await processNoobTags(css);
+          js = await processNoobTags(js);
+
+          // Convert the custom '()' CSS brackets back to '{}' for the browser!
+          css = css.replace(/\(/g, '{').replace(/\)/g, '}');
+
           const parser = new DOMParser();
           const doc = parser.parseFromString(html, 'text/html');
           if (css.trim() !== '') {
@@ -1845,19 +1908,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         monaco.languages.setMonarchTokensProvider('noob', {
           tokenizer: {
             root: [
-              [/\b(?:cook|sus|imposter|grind|edge|sigma|yeet|nocap|cap|ratio|bet|flex|nah|skibidi|rizz|gyatt)\b/, "keyword"],
-              [/\b(?:yo|ask|rng|len|renderWeb|fileWrite|fileRead)\b/, "type.identifier"],
+              [/\b(?:cook|sus|imposter|grind|edge|sigma|yeet|nocap|cap|ratio|bet|flex|nah|skibidi|rizz|gyatt|yo)\b/, "keyword"],
+              [/\b(?:ask|rng|len|renderWeb|fileWrite|fileRead)\b/, "type.identifier"],
               [/[a-zA-Z_]\w*/, "identifier"],
               [/[0-9]+(\.[0-9]+)?/, "number"],
-              [/"/, "string", "@string_double"],
+              [/>.*/, "string"],
               [/'/, "string", "@string_single"],
               [/`/, "string", "@string_backtick"],
               [/#.*/, "comment"]
-            ],
-            string_double: [
-              [/[^\\"]+/, "string"],
-              [/\\./, "string.escape"],
-              [/"/, "string", "@pop"]
             ],
             string_single: [
               [/[^\\']+/, "string"],
