@@ -1020,7 +1020,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NoobIDE (Brainrot Edition)</title>
+    <title>NoobIDE</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23212223'/%3E%3Crect x='4' y='4' width='120' height='120' rx='24' fill='none' stroke='%233c3f41' stroke-width='4'/%3E%3Cpath d='M 28 28 H 100 A 12 12 0 0 1 112 40 V 100 A 12 12 0 0 1 100 112 H 28 A 12 12 0 0 1 16 100 V 40 A 12 12 0 0 1 28 28 Z' fill='%232b2b2b' stroke='%234b6eaf' stroke-width='3'/%3E%3Cpath d='M 36 50 L 26 64 L 36 78' fill='none' stroke='%23cc7832' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M 48 78 V 50 L 80 78 V 50' fill='none' stroke='%23a9b7c6' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M 92 50 L 102 64 L 92 78' fill='none' stroke='%234b6eaf' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3Crect x='50' y='86' width='28' height='5' fill='%236a8759' rx='2'/%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       :root {
@@ -1109,6 +1110,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="h-8 flex items-center justify-between px-3 bg-[#3c3f41] border-b border-[#242627]">
       <div class="flex items-center space-x-4">
         <div class="flex items-center space-x-2 font-bold text-[#a9b7c6]">
+          <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="128" height="128" rx="28" fill="#212223" />
+            <rect x="4" y="4" width="120" height="120" rx="24" fill="none" stroke="#3c3f41" stroke-width="4" />
+            <path d="M 28 28 H 100 A 12 12 0 0 1 112 40 V 100 A 12 12 0 0 1 100 112 H 28 A 12 12 0 0 1 16 100 V 40 A 12 12 0 0 1 28 28 Z" fill="#2b2b2b" stroke="#4b6eaf" stroke-width="3" />
+            <path d="M 36 50 L 26 64 L 36 78" fill="none" stroke="#cc7832" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M 48 78 V 50 L 80 78 V 50" fill="none" stroke="#a9b7c6" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M 92 50 L 102 64 L 92 78" fill="none" stroke="#4b6eaf" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+            <rect x="50" y="86" width="28" height="5" fill="#6a8759" rx="2" />
+          </svg>
           <span>NoobIDE</span>
         </div>
         <div class="flex space-x-4 text-[13px]">
@@ -1180,7 +1190,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
             </svg>
             <svg class="w-4 h-4 cursor-pointer hover:text-white mr-1" id="btn-expand-term" onclick="toggleExpandTerminal()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l-5 5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+              <path id="icon-expand-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4M10 10L4 4M14 14l6 6M14 10l6-6M10 14l-6 6"></path>
             </svg>
             <svg class="w-4 h-4 cursor-pointer hover:text-white mr-2" onclick="closeTerminalPanel()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -1337,13 +1347,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (editor) editor.layout();
       }
       function toggleExpandTerminal() {
+        const pathEl = document.getElementById('icon-expand-path');
         if (!isTerminalExpanded) {
           savedTerminalHeight = bottomPanel.style.height || '250px';
           bottomPanel.style.height = (window.innerHeight * 0.75) + 'px';
           isTerminalExpanded = true;
+          if (pathEl) pathEl.setAttribute('d', 'M4 14h6v6M20 14h-6v6M4 10h6V4M20 10h-6V4M10 10L4 4M14 14l6 6M14 10l6-6M10 14l-6 6');
         } else {
           bottomPanel.style.height = savedTerminalHeight;
           isTerminalExpanded = false;
+          if (pathEl) pathEl.setAttribute('d', 'M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4M10 10L4 4M14 14l6 6M14 10l6-6M10 14l-6 6');
         }
         if (editor) editor.layout();
       }
