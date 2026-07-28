@@ -1,39 +1,62 @@
-# NoobIDE
+# NoobIDE (Brainrot Edition) 🚽
 <img width="1366" height="685" alt="screenshot" src="https://github.com/user-attachments/assets/d826d3d8-4cf1-4ea8-b131-b5692bdb0132" />
 
-> ⚠️ **Disclaimer for Beginners**
-> **NoobIDE** and the **Noob** language were created purely as a fun, educational toy project for beginners. It has no JIT compiler, no advanced garbage collection, and no complex error handling. It is designed to be the simplest version of a scripting language possible. **Please do not take this project seriously or use it in production!**
+> ⚠️ **Disclaimer for Normies (and Beginners)**
+> **NoobIDE** and the **Noob** language were originally created as a simple toy project. But now? We've ascended. This bad boy features a **JIT Compiler** (Just-In-Toilet), **Garbage Collection** (to automatically throw away your trash code), and **Proper Error Handling** (so it can catch your L's in real-time). It is as powerful as JavaScript but optimized for maximum brainrot. Use at your own risk in Ohio.
 
 ---
 
-**NoobIDE** is a lightweight, single-file web-based IDE for building and running **Noob** scripts (`.noob`) alongside web files (`HTML`, `CSS`, `JS`).
+**NoobIDE** is a lightweight, single-file web-based IDE for building and running **Noob** scripts (`.noob`) alongside web files (`HTML`, `CSS`, `JS`). Now completely overhauled with Gen Alpha syntax!
 
 ---
 
-## 🚀 Features
+## 🚀 Features (Mogging the Competition)
 
-- **Ultra-Simple `.noob` Interpreter** – Powered by a custom minimal lexer, parser, and interpreter.
-- **No Parentheses (`()`) & No Double Quotes (`"`)** – Function calls and control blocks don't require parentheses, and strings only use single quotes (`'`) or backticks (`` ` ``).
-- **Minimal Keyword Set** – Stripped down to just 6 essential keywords (`set`, `if`, `loop`, `return`, `true`, `false`).
-- **Monaco Editor Integration** – Code editing with custom syntax highlighting tailored specifically for `.noob`.
-- **Project Explorer** – Full workspace management (create, rename, copy, delete files/folders, and download ZIPs).
-- **Real-Time Web View** – Live split-screen preview for HTML, CSS, JS, and `renderWeb` virtual renders.
-- **Integrated Terminal & Logs** – Live command output, interactive input prompts (`ask`), and execution logs.
+- **Brainrot Syntax Interpreter** – Write code using the finest vocabulary TikTok has to offer.
+- **Blazing Fast JIT Compiler** – Compiles your `.noob` Abstract Syntax Tree (AST) directly into asynchronous JavaScript behind the scenes. 
+- **Garbage Collection** – Native memory management under the hood (thanks to the JS V8 engine doing the heavy lifting for your unoptimized gyatts).
+- **Proper Error Handling** – Accurate line numbers, strict tokenization, and red-text screaming when your syntax is sus.
+- **Object-Oriented Rizz** – Full support for classes, methods, and instantiation!
+- **Monaco Editor Integration** – Custom syntax highlighting that officially recognizes `skibidi` as a keyword.
+- **Real-Time Web View** – Live split-screen preview for your web files and virtual renders.
+- **Integrated Terminal** – Live command output and interactive input (`ask`).
 
 ---
 
-## 🔤 Syntax Overview
+## 🧠 Brainrot Dictionary (Syntax Overview)
 
-- **Keywords**: `set`, `if`, `loop`, `return`, `true`, `false`
-- **Quotes**: Only `'single quotes'` and `` `backticks` `` are supported.
-- **No Parentheses**: Commands are called cleanly using space/comma separated parameters.
-- **Built-in Functions**:
-  - `yo msg` – Print output to the terminal log.
-  - `ask prompt` – Request interactive input from the user in the terminal.
-  - `rng min, max` – Generate a random integer between min and max.
-  - `len item` – Get the length of a string, array, or map.
-  - `renderWeb html, css, js` – Render web content directly to the live Web View.
-  - `fileRead filename` / `fileWrite filename, content` – Read and write workspace files.
+Forget everything you learned in Computer Science. Here is how we code in Ohio:
+
+### Variables & Data
+- `cook` = `let` / `var` (Let him cook!)
+- `nocap` = `true`
+- `cap` = `false`
+- `ratio` = `null`
+
+### Control Flow
+- `sus` = `if` 
+- `imposter` = `else`
+- `grind` = `repeat` (e.g., `grind 5 { ... }`)
+- `edge` = `while` loop (Do NOT edge infinitely, it will crash your browser)
+- `yeet` = `return`
+
+### Logic
+- `bet` = `&&` (AND)
+- `flex` = `||` (OR)
+- `nah` = `!` (NOT)
+
+### Object-Oriented (OOP)
+- `sigma` = `function` / method
+- `skibidi` = `class`
+- `rizz` = `new` (instantiate an object)
+- `gyatt` = `this` (pointer to the current instance's massive assets)
+
+### Built-in Functions:
+- `yo(msg)` – Console log. (Prints to the terminal).
+- `ask(prompt)` – Prompts the user for input.
+- `rng(min, max)` – Generates a random number.
+- `len(item)` – Gets the length of an array/string/map.
+- `renderWeb(html, css, js)` – Pushes code straight to the Web View frame.
 
 ---
 
@@ -45,22 +68,50 @@
 
 ---
 
-## 📜 Example `.noob` Code
+> **Pro Tip:** Press `Ctrl + Shift + F` or `Cmd + Shift + F` to format your spaghetti code into neatly indented, readable brainrot.
+> 
+## 📜 Example `.noob` Code (Certified Sigma Material)
 
 ```noob
-set html = '<h1>Hello World!</h1>'
-set css = 'h1 { color: #4b6eaf; font-family: sans-serif; }'
-set js = 'console.log(`App loaded!`);'
+cook html = "<h1>Skibidi Toilet</h1>"
+cook css = "h1 { color: red; }"
+cook js = "console.log('Rizzed virtually!');"
 
-renderWeb html, css, js
-yo 'NoobIDE is ready!'
+# Render directly to the DOM!
+renderWeb(html, css, js)
 
-# Simple control structures
-set count = 3
-loop count {
-  yo 'Looping...'
+# Classes and Objects baby!
+skibidi Rizzler {
+  
+  # Constructor
+  sigma init(name) {
+    gyatt.name = name
+  }
+  
+  # Method
+  sigma flex() {
+    yeet "Level 100 Gyatt from " + gyatt.name
+  }
 }
 
-if count == 3 {
-  yo 'Count is exactly 3!'
+# Instantiate with rizz
+cook duke = rizz Rizzler("Duke Dennis")
+yo(duke.flex())
+
+# Conditional Logic
+sigma calcRizz(aura) {
+  sus aura > 9000 {
+    yeet "Sigma"
+  } imposter {
+    yeet "Beta"
+  }
+}
+
+yo("Your status: " + calcRizz(10000))
+
+# Loops
+cook rizz_level = 0
+edge rizz_level < 3 {
+  rizz_level += 1
+  yo("Mewing streak: " + rizz_level)
 }
