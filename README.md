@@ -1,64 +1,66 @@
 # NoobIDE
 <img width="1366" height="685" alt="screenshot" src="https://github.com/user-attachments/assets/d826d3d8-4cf1-4ea8-b131-b5692bdb0132" />
 
-> ⚠️ **Disclaimer for Normies (and Beginners)**
-> **NoobIDE** and the **Noob** language were originally created as a simple toy project. But now? We've ascended. This bad boy features a **JIT Compiler** (Just-In-Toilet), **Garbage Collection** (to automatically throw away your trash code), and **Proper Error Handling** (so it can catch your L's in real-time). It is as powerful as JavaScript but optimized for maximum brainrot. Use at your own risk in Ohio.
+> ⚠️ **Disclaimer**
+> **NoobIDE** and the **Noob** language have evolved into a structured, assembly-like scripting language. Featuring a **JIT Compiler**, **Garbage Collection**, and **Proper Error Handling**, it enforces strict vertical coding patterns and elegant 3-letter keywords.
 
 ---
 
-**NoobIDE** is a lightweight, single-file web-based IDE for building and running **Noob** scripts (`.noob`) alongside web files (`HTML`, `CSS`, `JS`). Now completely overhauled with Gen Alpha syntax!
+**NoobIDE** is a lightweight, single-file web-based IDE for building and running **Noob** scripts (`.noob`) alongside web files (`HTML`, `CSS`, `JS`). 
 
 ---
 
-## 🚀 Features (Mogging the Competition)
+## 🚀 Features
 
-- **Brainrot Syntax Interpreter** – Write code using the finest vocabulary TikTok has to offer.
-- **Strictly Parentheses `()`** – We banished `{}` and `[]` to the shadow realm. Scopes, arrays, maps, and CSS? We only use `()` here. 
-- **Blazing Fast JIT Compiler** – Compiles your `.noob` Abstract Syntax Tree (AST) directly into asynchronous JavaScript behind the scenes. 
-- **Garbage Collection** – Native memory management under the hood (thanks to the JS V8 engine doing the heavy lifting for your unoptimized gyatts).
-- **Proper Error Handling** – Accurate line numbers, strict tokenization, and red-text screaming when your syntax is sus.
-- **Object-Oriented Rizz** – Full support for classes, methods, and instantiation!
-- **Monaco Editor Integration** – Custom syntax highlighting that officially recognizes `skibidi` as a keyword.
+- **Vertical Assembly-Style Syntax** – Clean, linear code without deep nested pyramids. Block structures are elegantly terminated vertically using `end`.
+- **Strictly No Parentheses Allowed** – Parentheses `()` and brackets `[]` have been completely banned. Logic relies on words and clean line parsing.
+- **3-Letter Keyword Standard** – Consistent and minimalist. (`var`, `fun`, `ret`, `cls`, `new`, `ths`, etc.)
+- **Natural Logic Operators** – Use plain English for mathematical comparisons (`greater than` and `less than`).
+- **Blazing Fast JIT Compiler** – Compiles your `.noob` Abstract Syntax Tree (AST) directly into asynchronous JavaScript.
+- **Object-Oriented** – Full support for classes, methods, and instantiation without the boilerplate.
+- **Monaco Editor Integration** – Custom syntax highlighting that officially recognizes the new syntax.
 - **Real-Time Web View** – Live split-screen preview for your web files and virtual renders.
 - **Integrated Terminal** – Live command output and interactive input (`ask`).
 
 ---
 
-## 🧠 Brainrot Dictionary (Syntax Overview)
+## 🧠 Language Reference (Wiki)
 
-Forget everything you learned in Computer Science. Here is how we code in Ohio:
-
-### Variables, Strings & Data
-- `cook` = `let` / `var` (Let him cook!)
-- `>` = Instantly turns the rest of the line into a string! (e.g., `cook name = > John`)
-- `nocap` = `true`
-- `cap` = `false`
-- `ratio` = `null`
+### Variables & Data Types
+- `var` : Declare a variable.
+- `~` : String definition (turns the entire rest of the line into a string).
+- `'` : Standard inline string (single quotes only).
+- `tru` : True boolean.
+- `fls` : False boolean.
+- `nul` : Null value.
 
 ### Control Flow
-- `sus` = `if` 
-- `imposter` = `else`
-- `grind` = `repeat` (e.g., `grind 5 ( ... )`)
-- `edge` = `while` loop (Do NOT edge infinitely, it will crash your browser)
-- `yeet` = `return`
+- `if` : Conditional if.
+- `els` : Conditional else.
+- `whl` : While loop.
+- `rpt` : Repeat loop (runs a specific number of times).
+- `end` : Terminates a block (if statements, loops, functions, classes).
+- `ret` : Return a value from a function.
 
-### Logic
-- `bet` = `&&` (AND)
-- `flex` = `||` (OR)
-- `nah` = `!` (NOT)
+### Operators & Logic
+- `and` : Logical AND.
+- `orr` : Logical OR.
+- `not` : Logical NOT.
+- `greater than` : Greater than comparison (`>`).
+- `less than` : Less than comparison (`<`).
 
 ### Object-Oriented (OOP)
-- `sigma` = `function` / method
-- `skibidi` = `class`
-- `rizz` = `new` (instantiate an object)
-- `gyatt` = `this` (pointer to the current instance's massive assets)
+- `cls` : Define a class.
+- `fun` : Define a function or class method.
+- `new` : Instantiate an object.
+- `ths` : Reference the current object instance (this).
 
-### Built-in Functions:
-- `yo msg` or `yo(msg)` – Console log. (Prints to the terminal. Supports commas!).
-- `ask('prompt')` – Prompts the user for input.
-- `rng(min, max)` – Generates a random number.
-- `len(item)` – Gets the length of an array/string/map.
-- `renderWeb(html, css, js)` – Pushes code straight to the Web View frame.
+### Built-in Functions
+- `yo` : Console log. Prints to the terminal. Supports multiple arguments separated by commas.
+- `ask` : Prompts the user for input in the terminal.
+- `rng` : Generates a random number.
+- `len` : Gets the length of a string or object.
+- `rWb` : Renders HTML, CSS, and JS directly to the Web View frame (`renderWeb`).
 
 ---
 
@@ -70,59 +72,44 @@ Forget everything you learned in Computer Science. Here is how we code in Ohio:
 
 ---
 
-> **Pro Tip:** Press `Ctrl + Shift + F` or `Cmd + Shift + F` to format your spaghetti code into neatly indented, readable brainrot.
-
----
-
-## 📜 Example `.noob` Code (Certified Sigma Material)
+## 📜 Example `.noob` Code
 
 ```noob
-cook name = > John
-cook age = > 28
+var name = ~ John
+var age = 28
 
-# Call functions with or without parentheses
 yo name, age
 
-# The > operator turns the rest of the line into a string!
-cook html = > <h1><noob>yo name</noob></h1>
-cook css = > h1 ( color: red; )
-cook js = > console.log(<noob>yo 'Rizzed virtually!'</noob>);
+var html = ~ <h1><noob>yo name</noob></h1>
+var css = ~ h1 { color: red; }
+var js = ~ console.log(<noob>yo 'Hello virtually!'</noob>);
 
-# Render directly to the DOM!
-renderWeb(html, css, js)
+rWb html, css, js
 
-# Classes and Objects baby! (Only using round brackets)
-skibidi Rizzler (
-  
-  # Constructor
-  sigma init(name) (
-    gyatt.name = name
-  )
-  
-  # Method
-  sigma flex() (
-    yeet 'Level 100 Gyatt from ' + gyatt.name
-  )
-)
+cls Person
+  fun init name
+    ths.name = name
+  end
+  fun greet
+    ret 'Hello from ' + ths.name
+  end
+end
 
-# Instantiate with rizz
-cook duke = rizz Rizzler('Duke Dennis')
-yo duke.flex()
+var p = new Person 'Jane'
+yo p.greet
 
-# Conditional Logic
-sigma calcRizz(aura) (
-  sus aura > 9000 (
-    yeet 'Sigma'
-  ) imposter (
-    yeet 'Beta'
-  )
-)
+fun check age
+  if age greater than 18
+    ret 'Adult'
+  els
+    ret 'Minor'
+  end
+end
 
-yo 'Your status: ' + calcRizz(10000)
+yo 'Status: ' + check 20
 
-# Loops
-cook rizz_level = 0
-edge rizz_level < 3 (
-  rizz_level += 1
-  yo 'Mewing streak: ' + rizz_level
-)
+var count = 0
+whl count less than 3
+  count += 1
+  yo 'Count: ' + count
+end
