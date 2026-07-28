@@ -7,7 +7,7 @@ if (!is_dir($workspace_dir)) {
 if (!file_exists($workspace_dir . '/main.noob')) {
   file_put_contents(
     $workspace_dir . '/main.noob',
-    "set html = '<h1>Hello Noob</h1>'\nset css = 'h1 { color: red; }'\nset js = 'console.log(`Rendered virtually!`);'\nrenderWeb html, css, js"
+    "cook html = \"<h1>Skibidi Toilet</h1>\"\ncook css = \"h1 { color: red; }\"\ncook js = \"console.log('Rizzed virtually!');\"\n\nrenderWeb(html, css, js)\n\nskibidi Rizzler {\n  sigma init(name) {\n    gyatt.name = name\n  }\n  sigma flex() {\n    yeet \"Level 100 Gyatt from \" + gyatt.name\n  }\n}\n\ncook duke = rizz Rizzler(\"Duke Dennis\")\nyo(duke.flex())"
   );
 }
 function getSafePath($base, $path) {
@@ -128,9 +128,9 @@ if (isset($_GET['view'])) {
       exit();
     } elseif ($ext === 'noob') {
       $content = file_get_contents($path);
-      preg_match("/set\s+html\s*=\s*['`]([\s\S]*?)['`]/i", $content, $mHtml);
-      preg_match("/set\s+css\s*=\s*['`]([\s\S]*?)['`]/i", $content, $mCss);
-      preg_match("/set\s+js\s*=\s*['`]([\s\S]*?)['`]/i", $content, $mJs);
+      preg_match("/cook\s+html\s*=\s*[\"'\`]([\s\S]*?)[\"'\`]/i", $content, $mHtml);
+      preg_match("/cook\s+css\s*=\s*[\"'\`]([\s\S]*?)[\"'\`]/i", $content, $mCss);
+      preg_match("/cook\s+js\s*=\s*[\"'\`]([\s\S]*?)[\"'\`]/i", $content, $mJs);
       $html = $mHtml[1] ?? '';
       $css = $mCss[1] ?? '';
       $js = $mJs[1] ?? '';
@@ -186,6 +186,8 @@ class NoobTokenType {
   const T_LESS = '<';
   const T_GTE = '>=';
   const T_LTE = '<=';
+  const T_LPAREN = '(';
+  const T_RPAREN = ')';
   const T_LBRACE = '{';
   const T_RBRACE = '}';
   const T_LBRACKET = '[';
@@ -210,12 +212,22 @@ class NoobLexer {
   private $cursor = 0;
   private $line = 1;
   private $keywords = [
-    'set' => true,
-    'if' => true,
-    'loop' => true,
-    'return' => true,
-    'true' => true,
-    'false' => true,
+    'cook' => true,
+    'sus' => true,
+    'imposter' => true,
+    'grind' => true,
+    'edge' => true,
+    'sigma' => true,
+    'yeet' => true,
+    'nocap' => true,
+    'cap' => true,
+    'ratio' => true,
+    'bet' => true,
+    'flex' => true,
+    'nah' => true,
+    'skibidi' => true,
+    'rizz' => true,
+    'gyatt' => true,
   ];
   public function __construct($sourceCode) {
     $this->code = $sourceCode;
@@ -244,7 +256,7 @@ class NoobLexer {
         }
         continue;
       }
-      if ($char === "'" || $char === '`') {
+      if ($char === '"' || $char === "'" || $char === '`') {
         $quote = $char;
         $strVal = '';
         $this->cursor++;
@@ -330,7 +342,7 @@ class NoobLexer {
         case '/':
           $tokens[] = new NoobToken(NoobTokenType::T_DIV, '/', $this->line);
           break;
-        case '%:':
+        case '%':
           $tokens[] = new NoobToken(NoobTokenType::T_MOD, '%', $this->line);
           break;
         case '^':
@@ -341,6 +353,12 @@ class NoobLexer {
           break;
         case '<':
           $tokens[] = new NoobToken(NoobTokenType::T_LESS, '<', $this->line);
+          break;
+        case '(':
+          $tokens[] = new NoobToken(NoobTokenType::T_LPAREN, '(', $this->line);
+          break;
+        case ')':
+          $tokens[] = new NoobToken(NoobTokenType::T_RPAREN, ')', $this->line);
           break;
         case '{':
           $tokens[] = new NoobToken(NoobTokenType::T_LBRACE, '{', $this->line);
@@ -364,7 +382,7 @@ class NoobLexer {
           $tokens[] = new NoobToken(NoobTokenType::T_COLON, ':', $this->line);
           break;
         default:
-          throw new Exception("Lexer Error: Unknown character '{$char}' at line {$this->line}");
+          throw new Exception("Syntax Error: Unknown rizz '{$char}' at line {$this->line}");
       }
       $this->cursor++;
     }
@@ -374,116 +392,167 @@ class NoobLexer {
 }
 abstract class ASTNode {}
 class VarDeclNode extends ASTNode {
-  public $name;
-  public $valueExpr;
-  public function __construct($name, $valueExpr) {
-    $this->name = $name;
-    $this->valueExpr = $valueExpr;
+  public $varDeclName;
+  public $varDeclExpr;
+  public function __construct($name, $expr) {
+    $this->varDeclName = $name;
+    $this->varDeclExpr = $expr;
   }
 }
 class VarAssignNode extends ASTNode {
-  public $targetNode;
-  public $op;
-  public $valueExpr;
-  public function __construct($targetNode, $op, $valueExpr) {
-    $this->targetNode = $targetNode;
-    $this->op = $op;
-    $this->valueExpr = $valueExpr;
+  public $assignTarget;
+  public $assignOp;
+  public $assignExpr;
+  public function __construct($target, $op, $expr) {
+    $this->assignTarget = $target;
+    $this->assignOp = $op;
+    $this->assignExpr = $expr;
   }
 }
 class CallNode extends ASTNode {
-  public $funcExpr;
-  public $args;
-  public function __construct($funcExpr, $args = []) {
-    $this->funcExpr = $funcExpr;
-    $this->args = $args;
+  public $callFuncExpr;
+  public $callArgs;
+  public function __construct($func, $args = []) {
+    $this->callFuncExpr = $func;
+    $this->callArgs = $args;
+  }
+}
+class FunctionDeclNode extends ASTNode {
+  public $funcName;
+  public $funcParams;
+  public $funcBody;
+  public function __construct($name, $params, $body) {
+    $this->funcName = $name;
+    $this->funcParams = $params;
+    $this->funcBody = $body;
   }
 }
 class ReturnNode extends ASTNode {
-  public $valueExpr;
-  public function __construct($valueExpr = null) {
-    $this->valueExpr = $valueExpr;
+  public $returnValueExpr;
+  public $isReturn = true;
+  public function __construct($expr = null) {
+    $this->returnValueExpr = $expr;
   }
 }
 class IfNode extends ASTNode {
-  public $condition;
+  public $ifCond;
   public $thenBlock;
-  public function __construct($condition, $thenBlock) {
-    $this->condition = $condition;
-    $this->thenBlock = $thenBlock;
+  public $elseBlock;
+  public function __construct($cond, $then, $else = null) {
+    $this->ifCond = $cond;
+    $this->thenBlock = $then;
+    $this->elseBlock = $else;
   }
 }
 class RepeatNode extends ASTNode {
-  public $countExpr;
-  public $body;
-  public function __construct($countExpr, $body) {
-    $this->countExpr = $countExpr;
-    $this->body = $body;
+  public $repeatCount;
+  public $repeatBody;
+  public function __construct($count, $body) {
+    $this->repeatCount = $count;
+    $this->repeatBody = $body;
+  }
+}
+class WhileNode extends ASTNode {
+  public $whileCond;
+  public $whileBody;
+  public function __construct($cond, $body) {
+    $this->whileCond = $cond;
+    $this->whileBody = $body;
   }
 }
 class BinaryOpNode extends ASTNode {
-  public $left;
-  public $op;
-  public $right;
-  public function __construct($left, $op, $right) {
-    $this->left = $left;
-    $this->op = $op;
-    $this->right = $right;
+  public $binLeft;
+  public $binOp;
+  public $binRight;
+  public function __construct($l, $o, $r) {
+    $this->binLeft = $l;
+    $this->binOp = $o;
+    $this->binRight = $r;
   }
 }
 class UnaryOpNode extends ASTNode {
-  public $op;
-  public $operand;
-  public function __construct($op, $operand) {
-    $this->op = $op;
-    $this->operand = $operand;
+  public $unOp;
+  public $unOperand;
+  public function __construct($o, $opnd) {
+    $this->unOp = $o;
+    $this->unOperand = $opnd;
   }
 }
 class ArrayNode extends ASTNode {
-  public $elements;
-  public function __construct($elements = []) {
-    $this->elements = $elements;
+  public $arrElements;
+  public function __construct($els = []) {
+    $this->arrElements = $els;
   }
 }
 class MapNode extends ASTNode {
-  public $entries;
-  public function __construct($entries = []) {
-    $this->entries = $entries;
+  public $mapEntries;
+  public function __construct($ents = []) {
+    $this->mapEntries = $ents;
   }
 }
 class IndexAccessNode extends ASTNode {
-  public $target;
-  public $index;
-  public function __construct($target, $index) {
-    $this->target = $target;
-    $this->index = $index;
+  public $idxTarget;
+  public $idxIndex;
+  public function __construct($tgt, $idx) {
+    $this->idxTarget = $tgt;
+    $this->idxIndex = $idx;
   }
 }
 class MemberAccessNode extends ASTNode {
-  public $target;
-  public $member;
-  public function __construct($target, $member) {
-    $this->target = $target;
-    $this->member = $member;
+  public $memTarget;
+  public $memMember;
+  public function __construct($tgt, $mem) {
+    $this->memTarget = $tgt;
+    $this->memMember = $mem;
   }
 }
 class LiteralNode extends ASTNode {
-  public $value;
-  public function __construct($value) {
-    $this->value = $value;
+  public $litValue;
+  public $isLiteral = true;
+  public function __construct($val) {
+    $this->litValue = $val;
   }
 }
 class VarRefNode extends ASTNode {
-  public $name;
-  public function __construct($name) {
-    $this->name = $name;
+  public $varRefName;
+  public function __construct($n) {
+    $this->varRefName = $n;
   }
 }
 class BlockNode extends ASTNode {
-  public $statements = [];
-  public function __construct($statements = []) {
-    $this->statements = $statements;
+  public $blockStatements;
+  public function __construct($stmts = []) {
+    $this->blockStatements = $stmts;
   }
+}
+class ClassDeclNode extends ASTNode {
+  public $className;
+  public $classMethods;
+  public function __construct($n, $m) {
+    $this->className = $n;
+    $this->classMethods = $m;
+  }
+}
+class MethodDeclNode extends ASTNode {
+  public $methodName;
+  public $methodParams;
+  public $methodBody;
+  public function __construct($n, $p, $b) {
+    $this->methodName = $n;
+    $this->methodParams = $p;
+    $this->methodBody = $b;
+  }
+}
+class NewNode extends ASTNode {
+  public $newClassName;
+  public $newArgs;
+  public function __construct($n, $a) {
+    $this->newClassName = $n;
+    $this->newArgs = $a;
+  }
+}
+class ThisNode extends ASTNode {
+  public $isThis = true;
 }
 class NoobParser {
   private $tokens;
@@ -515,15 +584,6 @@ class NoobParser {
     }
     throw new Exception("Parse Error [Line {$token->line}]: {$errMsg}. Found '{$token->value}'");
   }
-  private function isArgumentStart($token) {
-    return in_array($token->type, [
-      NoobTokenType::T_NUMBER,
-      NoobTokenType::T_STRING,
-      NoobTokenType::T_IDENTIFIER,
-      NoobTokenType::T_LBRACKET,
-      NoobTokenType::T_LBRACE
-    ]) || ($token->type === NoobTokenType::T_KEYWORD && in_array($token->value, ['true', 'false']));
-  }
   public function parseProgram() {
     $statements = [];
     while ($this->peek()->type !== NoobTokenType::T_EOF) {
@@ -533,14 +593,50 @@ class NoobParser {
   }
   private function parseStatement() {
     $token = $this->peek();
-    if ($token->type === NoobTokenType::T_KEYWORD && $token->value === 'set') {
+    if ($token->type === NoobTokenType::T_KEYWORD && $token->value === 'cook') {
       $this->advance();
       $varName = $this->consume(NoobTokenType::T_IDENTIFIER, null, 'Expected variable name')->value;
       $this->consume(NoobTokenType::T_ASSIGN, '=', "Expected '='");
       $expr = $this->parseExpression();
       return new VarDeclNode($varName, $expr);
     }
-    if ($token->type === NoobTokenType::T_KEYWORD && $token->value === 'return') {
+    if ($token->type === NoobTokenType::T_KEYWORD && $token->value === 'sigma') {
+      $this->advance();
+      $fnName = $this->consume(NoobTokenType::T_IDENTIFIER, null, 'Expected function name')->value;
+      $this->consume(NoobTokenType::T_LPAREN, '(', "Expected '('");
+      $params = [];
+      if ($this->peek()->type !== NoobTokenType::T_RPAREN) {
+        do {
+          $params[] = $this->consume(NoobTokenType::T_IDENTIFIER, null, 'Expected parameter name')->value;
+        } while ($this->match(NoobTokenType::T_COMMA));
+      }
+      $this->consume(NoobTokenType::T_RPAREN, ')', "Expected ')'");
+      $body = $this->parseBlock();
+      return new FunctionDeclNode($fnName, $params, $body);
+    }
+    if ($token->type === NoobTokenType::T_KEYWORD && $token->value === 'skibidi') {
+      $this->advance();
+      $className = $this->consume(NoobTokenType::T_IDENTIFIER, null, 'Expected class name')->value;
+      $this->consume(NoobTokenType::T_LBRACE, '{', "Expected '{'");
+      $methods = [];
+      while ($this->peek()->type !== NoobTokenType::T_RBRACE && $this->peek()->type !== NoobTokenType::T_EOF) {
+        $this->consume(NoobTokenType::T_KEYWORD, 'sigma', 'Expected sigma (method declaration)');
+        $fnName = $this->consume(NoobTokenType::T_IDENTIFIER, null, 'Expected method name')->value;
+        $this->consume(NoobTokenType::T_LPAREN, '(', "Expected '('");
+        $params = [];
+        if ($this->peek()->type !== NoobTokenType::T_RPAREN) {
+          do {
+            $params[] = $this->consume(NoobTokenType::T_IDENTIFIER, null, 'Expected parameter name')->value;
+          } while ($this->match(NoobTokenType::T_COMMA));
+        }
+        $this->consume(NoobTokenType::T_RPAREN, ')', "Expected ')'");
+        $body = $this->parseBlock();
+        $methods[] = new MethodDeclNode($fnName, $params, $body);
+      }
+      $this->consume(NoobTokenType::T_RBRACE, '}', "Expected '}'");
+      return new ClassDeclNode($className, $methods);
+    }
+    if ($token->type === NoobTokenType::T_KEYWORD && $token->value === 'yeet') {
       $this->advance();
       $valExpr = null;
       if ($this->peek()->type !== NoobTokenType::T_RBRACE && $this->peek()->type !== NoobTokenType::T_EOF) {
@@ -548,17 +644,32 @@ class NoobParser {
       }
       return new ReturnNode($valExpr);
     }
-    if ($token->type === NoobTokenType::T_KEYWORD && $token->value === 'if') {
+    if ($token->type === NoobTokenType::T_KEYWORD && $token->value === 'sus') {
       $this->advance();
       $cond = $this->parseExpression();
       $thenBlock = $this->parseBlock();
-      return new IfNode($cond, $thenBlock);
+      $elseBlock = null;
+      if ($this->peek()->type === NoobTokenType::T_KEYWORD && $this->peek()->value === 'imposter') {
+        $this->advance();
+        if ($this->peek()->type === NoobTokenType::T_KEYWORD && $this->peek()->value === 'sus') {
+          $elseBlock = new BlockNode([$this->parseStatement()]);
+        } else {
+          $elseBlock = $this->parseBlock();
+        }
+      }
+      return new IfNode($cond, $thenBlock, $elseBlock);
     }
-    if ($token->type === NoobTokenType::T_KEYWORD && $token->value === 'loop') {
+    if ($token->type === NoobTokenType::T_KEYWORD && $token->value === 'grind') {
       $this->advance();
       $countExpr = $this->parseExpression();
       $body = $this->parseBlock();
       return new RepeatNode($countExpr, $body);
+    }
+    if ($token->type === NoobTokenType::T_KEYWORD && $token->value === 'edge') {
+      $this->advance();
+      $condExpr = $this->parseExpression();
+      $body = $this->parseBlock();
+      return new WhileNode($condExpr, $body);
     }
     $expr = $this->parseExpression();
     if (
@@ -582,7 +693,25 @@ class NoobParser {
     return new BlockNode($statements);
   }
   private function parseExpression() {
-    return $this->parseEquality();
+    return $this->parseLogicalOr();
+  }
+  private function parseLogicalOr() {
+    $left = $this->parseLogicalAnd();
+    while ($this->peek()->type === NoobTokenType::T_KEYWORD && $this->peek()->value === 'flex') {
+      $op = $this->advance()->value;
+      $right = $this->parseLogicalAnd();
+      $left = new BinaryOpNode($left, $op, $right);
+    }
+    return $left;
+  }
+  private function parseLogicalAnd() {
+    $left = $this->parseEquality();
+    while ($this->peek()->type === NoobTokenType::T_KEYWORD && $this->peek()->value === 'bet') {
+      $op = $this->advance()->value;
+      $right = $this->parseEquality();
+      $left = new BinaryOpNode($left, $op, $right);
+    }
+    return $left;
   }
   private function parseEquality() {
     $left = $this->parseComparison();
@@ -634,12 +763,26 @@ class NoobParser {
       $this->advance();
       return new UnaryOpNode('-', $this->parseUnary());
     }
+    if ($this->peek()->type === NoobTokenType::T_KEYWORD && $this->peek()->value === 'nah') {
+      $this->advance();
+      return new UnaryOpNode('nah', $this->parseUnary());
+    }
     return $this->parseCallOrAccess();
   }
   private function parseCallOrAccess() {
     $expr = $this->parsePrimary();
     while (true) {
-      if ($this->peek()->type === NoobTokenType::T_LBRACKET) {
+      if ($this->peek()->type === NoobTokenType::T_LPAREN) {
+        $this->advance();
+        $args = [];
+        if ($this->peek()->type !== NoobTokenType::T_RPAREN) {
+          do {
+            $args[] = $this->parseExpression();
+          } while ($this->match(NoobTokenType::T_COMMA));
+        }
+        $this->consume(NoobTokenType::T_RPAREN, ')', "Expected ')'");
+        $expr = new CallNode($expr, $args);
+      } elseif ($this->peek()->type === NoobTokenType::T_LBRACKET) {
         $this->advance();
         $index = $this->parseExpression();
         $this->consume(NoobTokenType::T_RBRACKET, ']', "Expected ']'");
@@ -665,26 +808,45 @@ class NoobParser {
       return new LiteralNode($token->value);
     }
     if ($token->type === NoobTokenType::T_KEYWORD) {
-      if ($token->value === 'true') {
+      if ($token->value === 'nocap') {
         $this->advance();
         return new LiteralNode(true);
       }
-      if ($token->value === 'false') {
+      if ($token->value === 'cap') {
         $this->advance();
         return new LiteralNode(false);
+      }
+      if ($token->value === 'ratio') {
+        $this->advance();
+        return new LiteralNode(null);
+      }
+      if ($token->value === 'rizz') {
+        $this->advance();
+        $className = $this->consume(NoobTokenType::T_IDENTIFIER, null, 'Expected class name after rizz')->value;
+        $this->consume(NoobTokenType::T_LPAREN, '(', "Expected '('");
+        $args = [];
+        if ($this->peek()->type !== NoobTokenType::T_RPAREN) {
+          do {
+            $args[] = $this->parseExpression();
+          } while ($this->match(NoobTokenType::T_COMMA));
+        }
+        $this->consume(NoobTokenType::T_RPAREN, ')', "Expected ')'");
+        return new NewNode($className, $args);
+      }
+      if ($token->value === 'gyatt') {
+        $this->advance();
+        return new ThisNode();
       }
     }
     if ($token->type === NoobTokenType::T_IDENTIFIER) {
       $name = $this->advance()->value;
-      $stdFuncs = ['yo', 'ask', 'rng', 'len', 'renderWeb', 'fileWrite', 'fileRead'];
-      if (in_array($name, $stdFuncs) && $this->isArgumentStart($this->peek())) {
-        $args = [];
-        do {
-          $args[] = $this->parseExpression();
-        } while ($this->match(NoobTokenType::T_COMMA));
-        return new CallNode(new VarRefNode($name), $args);
-      }
       return new VarRefNode($name);
+    }
+    if ($token->type === NoobTokenType::T_LPAREN) {
+      $this->advance();
+      $expr = $this->parseExpression();
+      $this->consume(NoobTokenType::T_RPAREN, ')', "Expected ')'");
+      return $expr;
     }
     if ($token->type === NoobTokenType::T_LBRACKET) {
       $this->advance();
@@ -839,7 +1001,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NoobIDE</title>
+    <title>NoobIDE (Brainrot Edition)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       :root {
@@ -999,7 +1161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
             </svg>
             <svg class="w-4 h-4 cursor-pointer hover:text-white mr-1" id="btn-expand-term" onclick="toggleExpandTerminal()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l-5 5m11 5l-5-5m5 5v-4m0 4h-4"></path>
             </svg>
             <svg class="w-4 h-4 cursor-pointer hover:text-white mr-2" onclick="closeTerminalPanel()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -1489,241 +1651,162 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           res(val);
         }
       }
-      class Environment {
-        constructor(parent = null) {
-          this.vars = {};
-          this.parent = parent;
+      class JITCompiler {
+        constructor() {
+          this.inConstructor = false;
         }
-        set(name, val) {
-          this.vars[name] = val;
-        }
-        assign(name, val) {
-          if (Object.prototype.hasOwnProperty.call(this.vars, name)) {
-            this.vars[name] = val;
-            return;
+        compile(node) {
+          if (!node) return "null";
+          if (node.blockStatements !== undefined) {
+            return node.blockStatements.map(s => this.compile(s) + ";\n").join("");
           }
-          if (this.parent) {
-            this.parent.assign(name, val);
-            return;
+          if (node.varDeclName !== undefined) {
+            return `let ${node.varDeclName} = ${this.compile(node.varDeclExpr)}`;
           }
-          this.vars[name] = val;
-        }
-        get(name) {
-          if (Object.prototype.hasOwnProperty.call(this.vars, name)) {
-            return this.vars[name];
+          if (node.assignTarget !== undefined) {
+            return `${this.compile(node.assignTarget)} ${node.assignOp} ${this.compile(node.assignExpr)}`;
           }
-          if (this.parent) {
-            return this.parent.get(name);
+          if (node.callFuncExpr !== undefined) {
+            let fn = this.compile(node.callFuncExpr);
+            let args = node.callArgs.map(a => this.compile(a)).join(', ');
+            let callStr = "";
+            if (["yo", "ask", "rng", "len", "renderWeb", "fileWrite", "fileRead"].includes(fn)) {
+              callStr = `builtins.${fn}(${args})`;
+            } else {
+              callStr = `${fn}(${args})`;
+            }
+            if (this.inConstructor) return callStr;
+            return `(await ${callStr})`;
           }
-          throw new Error("Runtime Error: Variable '" + name + "' is not defined");
+          if (node.funcParams !== undefined) {
+            let params = node.funcParams.join(', ');
+            let body = this.compile(node.funcBody);
+            return node.funcName ? `async function ${node.funcName}(${params}) { ${body} }` : `async function(${params}) { ${body} }`;
+          }
+          if (node.isReturn) {
+            if (node.returnValueExpr === null) return `return`;
+            return `return ${this.compile(node.returnValueExpr)}`;
+          }
+          if (node.ifCond !== undefined) {
+            let cond = this.compile(node.ifCond);
+            let thenB = this.compile(node.thenBlock);
+            let elseB = node.elseBlock ? `else { ${this.compile(node.elseBlock)} }` : "";
+            return `if (${cond}) { ${thenB} } ${elseB}`;
+          }
+          if (node.repeatCount !== undefined) {
+            let count = this.compile(node.repeatCount);
+            let i = "__i" + Math.floor(Math.random() * 10000);
+            return `for(let ${i}=0; ${i}<(${count}); ${i}++) { ${this.compile(node.repeatBody)} }`;
+          }
+          if (node.whileCond !== undefined) {
+            return `while (${this.compile(node.whileCond)}) { ${this.compile(node.whileBody)} }`;
+          }
+          if (node.binLeft !== undefined) {
+            let op = node.binOp;
+            if (op === '==') op = '===';
+            if (op === '!=') op = '!==';
+            if (op === 'bet') op = '&&';
+            if (op === 'flex') op = '||';
+            if (op === '^') return `Math.pow(${this.compile(node.binLeft)}, ${this.compile(node.binRight)})`;
+            return `(${this.compile(node.binLeft)} ${op} ${this.compile(node.binRight)})`;
+          }
+          if (node.unOp !== undefined) {
+            let op = node.unOp;
+            if (op === 'nah') op = '!';
+            return `(${op}${this.compile(node.unOperand)})`;
+          }
+          if (node.arrElements !== undefined) {
+            return `[` + node.arrElements.map(e => this.compile(e)).join(', ') + `]`;
+          }
+          if (node.mapEntries !== undefined) {
+            let pairs = [];
+            for (let k in node.mapEntries) pairs.push(`"${k}": ${this.compile(node.mapEntries[k])}`);
+            return `{` + pairs.join(', ') + `}`;
+          }
+          if (node.idxTarget !== undefined) {
+            return `${this.compile(node.idxTarget)}[${this.compile(node.idxIndex)}]`;
+          }
+          if (node.memTarget !== undefined) {
+            return `${this.compile(node.memTarget)}.${node.memMember}`;
+          }
+          if (node.isLiteral) {
+            if (typeof node.litValue === 'string') return JSON.stringify(node.litValue);
+            return String(node.litValue);
+          }
+          if (node.varRefName !== undefined) {
+            return node.varRefName;
+          }
+          if (node.className !== undefined) {
+            return `class ${node.className} {\n  ` + node.classMethods.map(m => this.compile(m)).join('\n  ') + `\n}`;
+          }
+          if (node.methodName !== undefined) {
+            let params = node.methodParams.join(', ');
+            let prevInConstructor = this.inConstructor;
+            let isInit = (node.methodName === 'init');
+            this.inConstructor = isInit;
+            let body = this.compile(node.methodBody);
+            this.inConstructor = prevInConstructor;
+            if (isInit) return `constructor(${params}) { ${body} }`;
+            return `async ${node.methodName}(${params}) { ${body} }`;
+          }
+          if (node.newClassName !== undefined) {
+            return `new ${node.newClassName}(${node.newArgs.map(a => this.compile(a)).join(', ')})`;
+          }
+          if (node.isThis) {
+            return `this`;
+          }
+          return "";
         }
       }
-      class ReturnValue {
-        constructor(val) {
-          this.value = val;
-        }
-      }
-      class Interpreter {
-        toNum(v) {
-          const n = Number(v);
-          return isNaN(n) ? 0 : n;
-        }
-        stringify(val) {
-          if (typeof val === 'boolean') return val ? 'true' : 'false';
-          if (val === null || val === undefined) return 'null';
-          if (Array.isArray(val)) {
-            return '[' + val.map(x => this.stringify(x)).join(', ') + ']';
+      const builtins = {
+        yo: async (val) => {
+          let str = val !== undefined ? (typeof val === 'object' ? JSON.stringify(val) : String(val)) : '';
+          appendTerminal(str);
+          appendOutput(str);
+        },
+        rng: async (min = 0, max = 100) => Math.floor(Math.random() * (max - min + 1)) + min,
+        len: async (data) => {
+          if (typeof data === 'string' || Array.isArray(data)) return data.length;
+          if (typeof data === 'object' && data) return Object.keys(data).length;
+          return 0;
+        },
+        ask: async (promptText) => {
+          return await requestInput(promptText || '');
+        },
+        renderWeb: async (html = '', css = '', js = '') => {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          if (css.trim() !== '') {
+            const style = doc.createElement('style');
+            style.textContent = css;
+            doc.head.appendChild(style);
           }
-          if (typeof val === 'object') {
-            const pairs = [];
-            for (let k in val) {
-              pairs.push(k + ': ' + this.stringify(val[k]));
-            }
-            return '{' + pairs.join(', ') + '}';
+          if (js.trim() !== '') {
+            const script = doc.createElement('script');
+            script.textContent = js;
+            doc.body.appendChild(script);
           }
-          return String(val);
-        }
-        async evaluate(node, env) {
-          if (!node) return null;
-          if (node.statements) {
-            let res = null;
-            for (let stmt of node.statements) {
-              res = await this.evaluate(stmt, env);
-            }
-            return res;
-          }
-          if (node.value !== undefined && !node.name && !node.target) return node.value;
-          if (node.elements) {
-            let res = [];
-            for (let e of node.elements) res.push(await this.evaluate(e, env));
-            return res;
-          }
-          if (node.entries) {
-            let res = {};
-            for (let k in node.entries) res[k] = await this.evaluate(node.entries[k], env);
-            return res;
-          }
-          if (node.name && !node.valueExpr && !node.params) return env.get(node.name);
-          if (node.valueExpr && node.name && !node.params) {
-            let val = await this.evaluate(node.valueExpr, env);
-            env.set(node.name, val);
-            return val;
-          }
-          if (node.valueExpr !== undefined && !node.name && !node.targetNode) {
-            let val = node.valueExpr ? await this.evaluate(node.valueExpr, env) : null;
-            throw new ReturnValue(val);
-          }
-          if (node.targetNode) {
-            let val = await this.evaluate(node.valueExpr, env);
-            if (node.targetNode.name) {
-              let varName = node.targetNode.name;
-              if (node.op === '+=') val = env.get(varName) + val;
-              else if (node.op === '-=') val = env.get(varName) - val;
-              env.assign(varName, val);
-              return val;
-            } else if (node.targetNode.target && node.targetNode.index) {
-              let targetName = node.targetNode.target.name;
-              let idx = await this.evaluate(node.targetNode.index, env);
-              let curr = env.get(targetName);
-              curr[idx] = val;
-              env.assign(targetName, curr);
-              return val;
-            } else if (node.targetNode.target && node.targetNode.member) {
-              let targetName = node.targetNode.target.name;
-              let member = node.targetNode.member;
-              let curr = env.get(targetName);
-              curr[member] = val;
-              env.assign(targetName, curr);
-              return val;
-            }
-          }
-          if (node.target && node.index) {
-            let target = await this.evaluate(node.target, env);
-            let idx = await this.evaluate(node.index, env);
-            return target ? target[idx] : null;
-          }
-          if (node.target && node.member) {
-            let target = await this.evaluate(node.target, env);
-            return target ? target[node.member] : null;
-          }
-          if (node.operand) {
-            let val = await this.evaluate(node.operand, env);
-            if (node.op === '-') return -val;
-          }
-          if (node.left && node.right) {
-            let left = await this.evaluate(node.left, env);
-            let right = await this.evaluate(node.right, env);
-            switch (node.op) {
-              case '+':
-                if (typeof left === 'string' || typeof right === 'string') return this.stringify(left) + this.stringify(right);
-                return this.toNum(left) + this.toNum(right);
-              case '-':
-                return this.toNum(left) - this.toNum(right);
-              case '*':
-                return this.toNum(left) * this.toNum(right);
-              case '/':
-                if (this.toNum(right) === 0) throw new Error("Division by zero");
-                return this.toNum(left) / this.toNum(right);
-              case '%':
-                return this.toNum(left) % this.toNum(right);
-              case '^':
-                return Math.pow(this.toNum(left), this.toNum(right));
-              case '==':
-                return left == right;
-              case '!=':
-                return left != right;
-              case '>':
-                return left > right;
-              case '<':
-                return left < right;
-              case '>=':
-                return left >= right;
-              case '<=':
-                return left <= right;
-            }
-          }
-          if (node.condition && node.thenBlock) {
-            let condVal = await this.evaluate(node.condition, env);
-            if (condVal) return await this.evaluate(node.thenBlock, env);
-            return null;
-          }
-          if (node.countExpr && node.body) {
-            let count = Math.floor(this.toNum(await this.evaluate(node.countExpr, env)));
-            for (let i = 0; i < count; i++) await this.evaluate(node.body, env);
-            return null;
-          }
-          if (node.funcExpr) {
-            let args = [];
-            if (node.args) {
-              for (let arg of node.args) args.push(await this.evaluate(arg, env));
-            }
-            if (node.funcExpr.name) {
-              let fnName = node.funcExpr.name;
-              if (fnName === 'yo') {
-                let val = args[0] !== undefined ? args[0] : '';
-                appendTerminal(this.stringify(val));
-                appendOutput(this.stringify(val));
-                return null;
-              }
-              if (fnName === 'rng') {
-                let min = args[0] !== undefined ? Math.floor(this.toNum(args[0])) : 0;
-                let max = args[1] !== undefined ? Math.floor(this.toNum(args[1])) : 100;
-                return Math.floor(Math.random() * (max - min + 1)) + min;
-              }
-              if (fnName === 'len') {
-                let data = args[0];
-                if (typeof data === 'string' || Array.isArray(data)) return data.length;
-                if (typeof data === 'object' && data) return Object.keys(data).length;
-                return 0;
-              }
-              if (fnName === 'ask') {
-                let promptText = args[0] !== undefined ? this.stringify(args[0]) : '';
-                return await requestInput(promptText);
-              }
-              if (fnName === 'renderWeb') {
-                let html = args[0] !== undefined ? this.stringify(args[0]) : '';
-                let css = args[1] !== undefined ? this.stringify(args[1]) : '';
-                let js = args[2] !== undefined ? this.stringify(args[2]) : '';
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                if (css.trim() !== '') {
-                  const style = doc.createElement('style');
-                  style.textContent = css;
-                  doc.head.appendChild(style);
-                }
-                if (js.trim() !== '') {
-                  const script = doc.createElement('script');
-                  script.textContent = js;
-                  doc.body.appendChild(script);
-                }
-                const finalHTML = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
-                const wv = document.getElementById('webview-wrapper');
-                wv.classList.remove('hidden');
-                wv.classList.add('flex');
-                document.getElementById('v-resizer').classList.remove('hidden');
-                document.getElementById('webview-frame').srcdoc = finalHTML;
-                if (editor) editor.layout();
-                appendTerminal("[renderWeb] Rendered virtually directly to memory view", "text-green-400");
-                return null;
-              }
-              if (fnName === 'fileWrite') {
-                let fname = args[0] !== undefined ? this.stringify(args[0]) : '';
-                let fcontent = args[1] !== undefined ? this.stringify(args[1]) : '';
-                await apiCall('write', { filename: fname, content: fcontent });
-                await loadFiles();
-                return true;
-              }
-              if (fnName === 'fileRead') {
-                let fname = args[0] !== undefined ? this.stringify(args[0]) : '';
-                let res = await apiCall('read', { filename: fname });
-                return res.success ? res.content : null;
-              }
-            }
-            throw new Error("Runtime Error: Target is not callable");
-          }
+          const finalHTML = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+          const wv = document.getElementById('webview-wrapper');
+          wv.classList.remove('hidden');
+          wv.classList.add('flex');
+          document.getElementById('v-resizer').classList.remove('hidden');
+          document.getElementById('webview-frame').srcdoc = finalHTML;
+          if (editor) editor.layout();
+          appendTerminal("[renderWeb] Rendered virtually directly to memory view", "text-green-400");
           return null;
+        },
+        fileWrite: async (name, content) => {
+          await apiCall('write', { filename: name, content: content });
+          await loadFiles();
+          return true;
+        },
+        fileRead: async (name) => {
+          let res = await apiCall('read', { filename: name });
+          return res.success ? res.content : null;
         }
-      }
+      };
+      const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
       async function runCode() {
         await saveCurrentFile();
         openTerminalPanel();
@@ -1740,10 +1823,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
           const res = await apiCall('execute', { code: code });
           if (res.success) {
-            const interpreter = new Interpreter();
-            const env = new Environment();
+            const compiler = new JITCompiler();
+            const compiledJS = compiler.compile(res.ast);
+            const exec = new AsyncFunction('builtins', compiledJS);
             const start = performance.now();
-            await interpreter.evaluate(res.ast, env);
+            await exec(builtins);
             const time = Math.round(performance.now() - start);
             appendTerminal("[Finished in " + time + "ms]");
           } else {
@@ -1752,7 +1836,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('content-problems').innerHTML = "<div class='text-red-400'>PARSER ERROR:<br>" + res.error + "</div>";
           }
         } catch (err) {
-          appendTerminal("EXECUTION ERROR:\n" + err.message, "text-red-400");
+          appendTerminal("RUNTIME ERROR:\n" + err.message, "text-red-400");
         }
       }
       require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' } });
@@ -1761,13 +1845,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         monaco.languages.setMonarchTokensProvider('noob', {
           tokenizer: {
             root: [
-              [/\b(?:set|if|loop|return|true|false)\b/, "keyword"],
+              [/\b(?:cook|sus|imposter|grind|edge|sigma|yeet|nocap|cap|ratio|bet|flex|nah|skibidi|rizz|gyatt)\b/, "keyword"],
               [/\b(?:yo|ask|rng|len|renderWeb|fileWrite|fileRead)\b/, "type.identifier"],
               [/[a-zA-Z_]\w*/, "identifier"],
               [/[0-9]+(\.[0-9]+)?/, "number"],
+              [/"/, "string", "@string_double"],
               [/'/, "string", "@string_single"],
               [/`/, "string", "@string_backtick"],
               [/#.*/, "comment"]
+            ],
+            string_double: [
+              [/[^\\"]+/, "string"],
+              [/\\./, "string.escape"],
+              [/"/, "string", "@pop"]
             ],
             string_single: [
               [/[^\\']+/, "string"],
